@@ -11,8 +11,8 @@ type Message struct {
 	PartnerID int
 }
 
-// Response is a JSON response from sms.ru.
-type Response struct {
+// SendSMSResponse is a JSON response from sms.ru/sms/send.
+type SendSMSResponse struct {
 	Status     string          `json:"status"`
 	StatusCode int             `json:"status_code"`
 	SMS        map[string]*sms `json:"sms"`
@@ -23,4 +23,11 @@ type sms struct {
 	Status     string `json:"status"`
 	StatusCode int    `json:"status_code"`
 	SMSID      string `json:"sms_id"`
+}
+
+// GetBalanceResponse is a JSON response from sms.ru/my/balance.
+type GetBalanceResponse struct {
+	Status     string  `json:"status"`
+	StatusCode int     `json:"status_code"`
+	Balance    float64 `json:"balance"`
 }

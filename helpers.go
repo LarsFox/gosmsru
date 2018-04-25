@@ -9,8 +9,12 @@ import (
 	"net/url"
 )
 
-const sendAddr = "https://sms.ru/sms/send"
 const contentType = "application/x-www-form-urlencoded"
+
+const (
+	sendAddr    = "https://sms.ru/sms/send"
+	balanceAddr = "https://sms.ru/my/balance"
+)
 
 func validateBoolInt(num int) bool {
 	return num == 0 || num == 1
@@ -32,21 +36,16 @@ func (m *manager) auth() url.Values {
 	return vals
 }
 
-func sendSMS(params string) (response *Response, err error) {
-	resp, err := http.Post(sendAddr, contentType, bytes.NewBuffer([]byte(params)))
+func postRequest(addr, params string, response interface{}) (err error) {
+	resp, err := http.Post(addr, contentType, bytes.NewBuffer([]byte(params)))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
-
-	result := &Response{}
-	if err := json.Unmarshal(body, result); err != nil {
-		return nil, err
-	}
-	return result, nil
+	return json.Unmarshal(body, response)
 }
