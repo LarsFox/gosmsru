@@ -38,7 +38,7 @@ func (m *manager) SendMessage(msg *Message) (response *SendSMSResponse, err erro
 	}
 
 	for _, phone := range msg.To {
-		vals.Add("to", strconv.Itoa(phone))
+		vals.Add("to", phone)
 	}
 	vals.Add("msg", msg.Msg)
 	vals.Add("from", msg.From)

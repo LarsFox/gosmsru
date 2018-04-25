@@ -2,7 +2,7 @@ package gosmsru
 
 // Message is a struct with every recommended sms.ru API param. See http://sms.ru/api/send for more info.
 type Message struct {
-	To        []int
+	To        []string
 	Msg       string
 	From      string
 	Time      int64
