@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 const contentType = "application/x-www-form-urlencoded"
@@ -48,4 +49,43 @@ func postRequest(addr, params string, response interface{}) (err error) {
 	}
 	defer resp.Body.Close()
 	return json.Unmarshal(body, response)
+}
+
+// convertRawStringToInt converts raw int, or raw string "int" to int.
+func convertRawStringToInt(val json.RawMessage) (num int, err error) {
+	str := string(val)
+	num, err = strconv.Atoi(str)
+	if err == nil {
+		return num, err
+	}
+	return strconv.Atoi(str[1 : len(str)-1])
+}
+
+// convertRawSMS converts raw SMS response to valid SMS response.
+func convertRawSMS(raw *sendSMSResponseRaw) (*SendSMSResponse, error) {
+	sc, err := convertRawStringToInt(raw.StatusCode)
+	if err != nil {
+		return nil, err
+	}
+
+	smses := make(map[string]*sms)
+	for phone, s := range raw.SMS {
+		sc, err = convertRawStringToInt(s.StatusCode)
+		if err != nil {
+			return nil, err
+		}
+
+		smses[phone] = &sms{
+			Status:     s.Status,
+			StatusCode: sc,
+			SMSID:      s.SMSID,
+		}
+	}
+
+	return &SendSMSResponse{
+		Status:     raw.Status,
+		StatusCode: sc,
+		SMS:        smses,
+		Balance:    raw.Balance,
+	}, nil
 }

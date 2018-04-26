@@ -13,8 +13,8 @@ type manager struct {
 
 // Client is an interface to work with sms.ru.
 type Client interface {
-	SendMessage(msg *Message) (response *SendSMSResponse, err error)
-	SendTextToPhone(phone, text string) (response *SendSMSResponse, err error)
+	SendMessage(msg *Message) (*SendSMSResponse, error)
+	SendTextToPhone(phone, text string) (*SendSMSResponse, error)
 	GetBalance() (response *GetBalanceResponse, err error)
 }
 
@@ -28,7 +28,7 @@ func NewClient(token, login, password string) Client {
 }
 
 // SendMessage sends a message with every recommended API param.
-func (m *manager) SendMessage(msg *Message) (response *SendSMSResponse, err error) {
+func (m *manager) SendMessage(msg *Message) (*SendSMSResponse, error) {
 	vals := m.auth()
 	if !validateBoolInt(msg.Translit) {
 		return nil, errBadParam("translit")
@@ -47,23 +47,24 @@ func (m *manager) SendMessage(msg *Message) (response *SendSMSResponse, err erro
 	vals.Add("test", strconv.Itoa(msg.Test))
 	vals.Add("partner_id", strconv.Itoa(msg.PartnerID))
 
-	response = &SendSMSResponse{}
-	if err := postRequest(sendAddr, vals.Encode(), response); err != nil {
+	raw := &sendSMSResponseRaw{}
+	if err := postRequest(sendAddr, vals.Encode(), raw); err != nil {
 		return nil, err
 	}
-	return response, nil
+	return convertRawSMS(raw)
 }
 
 // SendTextToPhone sends a certain message to a certain phone number.
-func (m *manager) SendTextToPhone(phone, text string) (response *SendSMSResponse, err error) {
+func (m *manager) SendTextToPhone(phone, text string) (*SendSMSResponse, error) {
 	vals := m.auth()
 	vals.Add("to", phone)
 	vals.Add("msg", text)
-	response = &SendSMSResponse{}
-	if err := postRequest(sendAddr, vals.Encode(), response); err != nil {
+
+	raw := &sendSMSResponseRaw{}
+	if err := postRequest(sendAddr, vals.Encode(), raw); err != nil {
 		return nil, err
 	}
-	return response, nil
+	return convertRawSMS(raw)
 }
 
 // GetBalance returns information about balance.
