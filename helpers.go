@@ -7,10 +7,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 )
 
 const contentType = "application/x-www-form-urlencoded"
+const strPattern = `"[0-9]*"`
 
 const (
 	sendAddr    = "https://sms.ru/sms/send"
@@ -57,6 +59,13 @@ func convertRawStringToInt(val json.RawMessage) (num int, err error) {
 	num, err = strconv.Atoi(str)
 	if err == nil {
 		return num, err
+	}
+	ok, err := regexp.MatchString(strPattern, str)
+	if err != nil {
+		return 0, err
+	}
+	if !ok {
+		return 0, err
 	}
 	return strconv.Atoi(str[1 : len(str)-1])
 }
